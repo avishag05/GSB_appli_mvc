@@ -9,42 +9,77 @@
  * 
  */
 $action = filter_input(INPUT_GET, 'action', FILTER_SANITIZE_STRING);
+$idVisiteur = filter_input(INPUT_POST, 'lstVisiteur', FILTER_SANITIZE_STRING);
+$unMois = filter_input(INPUT_POST, 'lstMois', FILTER_SANITIZE_STRING);
+$idFrais = filter_input(INPUT_POST, 'idFrais', FILTER_SANITIZE_STRING);
+$lesFrais = filter_input(INPUT_POST, 'lesFrais', FILTER_DEFAULT, FILTER_FORCE_ARRAY);
+$libelle = filter_input(INPUT_POST, 'libelle', FILTER_SANITIZE_STRING);
+$date = filter_input(INPUT_POST, 'date', FILTER_SANITIZE_STRING);
+$montant = filter_input(INPUT_POST, 'montant', FILTER_SANITIZE_STRING);
+
+$visiteurs_a_valider = $pdo->getLesVisiteursAValider();
+$lesFraisHorsForfait = $pdo->getLesFraisHorsForfait($idVisiteur, $unMois);
+$lesFraisForfait = $pdo->getLesFraisForfait($idVisiteur, $unMois);
+$nbjustificatifs = $pdo->getNbjustificatifs($idVisiteur, $unMois);
+$mois = afficher12DerniersMois();
 
 switch ($action) {
     case 'selectionnerUtilisateur':
-        $visiteurs_a_valider = $pdo->getLesVisiteursAValider();
-        // var_dump($visiteurs_a_valider);
-
-        $mois = afficher12DerniersMois();
-        //  var_dump($mois);
         include 'vues/v_validerFicheFrais.php';
-
         break;
 
     case 'validerfichefrais':
-
-        $idVisiteur = filter_input(INPUT_POST, 'lstVisiteur', FILTER_SANITIZE_STRING);
-        $unMois = filter_input(INPUT_POST, 'lstMois', FILTER_SANITIZE_STRING);
-
-        $lesFraisHorsForfait = $pdo->getLesFraisHorsForfait($idVisiteur, $unMois);
-        $lesFraisForfait = $pdo->getLesFraisForfait($idVisiteur, $unMois);
-       // var_dump($lesFraisForfait, $lesFraisHorsForfait);
-       
         $moisASelectioner = $unMois;
         $visiteurASelectioner = $idVisiteur;
-
-        $visiteurs_a_valider = $pdo->getLesVisiteursAValider();
-        $mois = afficher12DerniersMois();
-
         if ((empty($lesFraisHorsForfait)) && (empty($lesFraisForfait))) {
             ajouterErreur('Pas de fiche de frais pour ce visiteur ce mois');
             include 'vues/v_erreurs.php';
             include 'vues/v_validerFicheFrais.php';
-            
-        } else {
+        } 
+        else {
             include 'vues/v_ficheFraisAValider.php';
         }
+        break;
+
+    case 'corrigerFrais' :
+        $moisASelectioner = $unMois;
+        $visiteurASelectioner = $idVisiteur;
+        $pdo->majFraisForfait($idVisiteur, $unMois, $lesFrais);
+        $lesFraisForfait = $pdo->getLesFraisForfait($idVisiteur, $unMois);
+        ajouterErreur('Modification des frais forfaits prise en compte');
+        include 'vues/v_erreurs.php';
+        include 'vues/v_ficheFraisAValider.php';
+        break;
 
 
+    case 'corrigerFraisHorsForfait':
+        if (isset($_POST['corrigerFHF'])) {
+            $pdo->majFraisHorsForfait($idFrais, $date, $libelle, $montant);
+            $lesFraisHorsForfait = $pdo->getLesFraisHorsForfait($idVisiteur, $unMois);
+            $moisASelectioner = $unMois;
+            $visiteurASelectioner = $idVisiteur;
+            ajouterErreur('Modification du frais hors forfait prise en compte');
+            include 'vues/v_erreurs.php';
+            include 'vues/v_ficheFraisAValider.php';
+        }
+        elseif (isset($_POST['supprimerFHF'])) {
+            $pdo->supprimerFraisHorsForfait($idFrais);
+            $moisASelectioner = $unMois;
+            $visiteurASelectioner = $idVisiteur;
+            ajouterErreur('Suppression du frais hors forfaits');
+            include 'vues/v_erreurs.php';
+            include 'vues/v_ficheFraisAValider.php';
+        } 
+        elseif (isset($_POST['reporterFHF'])) {
+            $Moispro = getMoisSuivant($unMois);
+            $pdo->modiflibelle($idFrais, $libelle);
+            $pdo->creeNouveauFraisHorsForfait($idVisiteur, $Moispro, $libelle, $date, $montant);
+            $lesFraisHorsForfait = $pdo->getLesFraisHorsForfait($idVisiteur, $unMois);
+            $moisASelectioner = $unMois;
+            $visiteurASelectioner = $idVisiteur;
+            ajouterErreur('Reportation du frais hors forfaits');
+            include 'vues/v_erreurs.php';
+            include 'vues/v_ficheFraisAValider.php';
+        }
         break;
 }

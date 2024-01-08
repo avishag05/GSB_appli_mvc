@@ -26,7 +26,8 @@ switch ($action) {
             $pdo->creeNouvellesLignesFrais($idVisiteur, $mois);
         }
         break;
-    case 'validerMajFraisForfait':
+    
+        case 'validerMajFraisForfait':
         $lesFrais = filter_input(INPUT_POST, 'lesFrais', FILTER_DEFAULT,FILTER_FORCE_ARRAY);
         if (lesQteFraisValides($lesFrais)) {
             $pdo->majFraisForfait($idVisiteur, $mois, $lesFrais);

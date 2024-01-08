@@ -48,6 +48,7 @@
         </table>
     </div>
 </div>
+
 <div class="row">
     <h3>Nouvel élément hors forfait</h3>
     <div class="col-md-4">
