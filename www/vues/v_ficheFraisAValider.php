@@ -141,6 +141,7 @@
                                size="10"
                                value="<?php echo $montant ?>" 
                                class="form-control"></td>
+                    
 
                     <td>
                         <input id="corrigerFHF" name="corrigerFHF" type="submit" value="Corriger" class="btn btn-success"/>  
@@ -152,14 +153,22 @@
                 <?php
             }
             ?>
-                  
+
             </tbody>  
         </table>
     </div>
-    <label for="lstVisiteur" accesskey="n">Nombre de justificatifs :
-        <input  type="text" value="<?php  echo $nbjustificatifs  ?>"/>  
-        <br>
-         <input id="valider" name="valider" type="submit" value="Valider" class="btn btn-success"/>  
-                       
-    </label> 
- </div>
+    <form method="post"  action="index.php?uc=validerFicheFrais&action=validerMontant" role="form">
+        <input name="lstMois" type="hidden" id="lstMois" class="form-control" value="<?php echo $moisASelectioner ?>">
+        <input name="lstVisiteur" type="hidden" id="lstVisiteur" class="form-control" value="<?php echo $visiteurASelectioner ?>">
+
+
+        <label for="lstVisiteur" accesskey="n">Nombre de justificatifs :
+            <input  name = "justif"  type="text" value="<?php echo $nbjustificatifs ?>"/>  
+            <br>
+        </label> 
+        <input id="validerMontant" name="validerMontant" type="submit" value="Valider" class="btn btn-success"/>  
+</div>
+</form>
+
+
+</div>
