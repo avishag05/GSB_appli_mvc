@@ -42,6 +42,11 @@
                            class="btn btn-primary btn-lg" role="button">
                             <span class="glyphicon glyphicon-list-alt"></span>
                             <br>Afficher mes fiches de frais</a>
+                           <a  style="background-color: pink ; border-color: orangered" href="index.php?uc=connexion&action=modifierMdpVisiteur"
+                           class="btn btn-primary btn-lg" role="button">
+                            <span class="glyphicon glyphicon-euro"></span>
+                            <br>Modifier mon Mot de passe</a>
+
                     </div>
                 </div>
             </div>

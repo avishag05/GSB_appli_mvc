@@ -36,63 +36,38 @@
  * @version   Release: 1.0
  * @link      http://www.php.net/manual/fr/book.pdo.php PHP Data Objects sur php.net
  */
-class PdoGsb
-{
-    /**
-    // Adresse IP de l'utilisateur qui accède au PHP
-    private static $adresseIP = $_SERVER['REMOTE_ADDR'];
-    // Liste des adresses IP associées à localhost
-    private static  $adressesLocalhost = array('127.0.0.1', '::1');
-   
-    // Vérifier si l'adresse IP est dans la liste des adresses localhost
-    if(in_array($_SERVER['REMOTE_ADDR'], array('127.0.0.1', '::1'))) { // Connexion en localhost
-        //if (in_array($adresseIP, $adressesLocalhost)) { // Connexion en localhost
-        private static $serveur = 'mysql:host=localhost';
-        private static $bdd = 'dbname=gsb_frais';
-        private static $user = 'userGsb';
-        private static $mdp = 'secret';
-        private static $monPdo;
-        private static $monPdoGsb = null;
-    } else { // Connexion externe
-        private static $serveur = 'mysql:host=db5015860721.hosting-data.io';
-        private static $bdd = 'dbname=dbs12931221';
-        private static $user = 'dbu607584';
-        private static $mdp = 'AvishagSeneor05/11/2005.';
-        private static $monPdo;
-        private static $monPdoGsb = null; 
-    }
-     * 
-     */
+class PdoGsb {
 
-        private static $serveur = 'mysql:host=localhost';
-        private static $bdd = 'dbname=gsb_frais';
-        private static $user = 'userGsb';
-        private static $mdp = 'secret';
-        private static $monPdo;
-        private static $monPdoGsb = null;
-        
-        private static $serveur_dist = 'mysql:host=db5015860721.hosting-data.io';
-        private static $bdd_dist = 'dbname=dbs12931221';
-        private static $user_dist = 'dbu607584';
-        private static $mdp_dist = 'AvishagSeneor05/11/2005.';
+    
+    private static $serveur = 'mysql:host=localhost';
+    private static $bdd = 'dbname=gsb_frais';
+    private static $user = 'userGsb';
+    private static $mdp = 'secret';
+    private static $monPdo;
+    private static $monPdoGsb = null;
+    
+    private static $serveur_dist = 'mysql:host=db5015860721.hosting-data.io';
+    private static $bdd_dist = 'dbname=dbs12931221';
+    private static $user_dist = 'dbu607584';
+    private static $mdp_dist = 'AvishagSeneor05/11/2005.';
 
     /**
      * Constructeur privé, crée l'instance de PDO qui sera sollicitée
      * pour toutes les méthodes de la classe
      */
     private function __construct() {
-        if(in_array($_SERVER['REMOTE_ADDR'], array('127.0.0.1', '::1'))) {
-        PdoGsb::$monPdo = new PDO(
-                PdoGsb::$serveur . ';' . PdoGsb::$bdd,
-                PdoGsb::$user,
-                PdoGsb::$mdp,
-        );
-        }else{
-            PdoGsb::$monPdo = new PDO(
-            PdoGsb::$serveur_dist . ';' . PdoGsb::$bdd_dist,
-            PdoGsb::$user_dist,
-            PdoGsb::$mdp_dist,
-           );
+      if ($_SERVER['SERVER_NAME']== "avishagseneor.fr"){
+                 PdoGsb::$monPdo = new PDO(
+                    PdoGsb::$serveur_dist . ';' . PdoGsb::$bdd_dist,
+                    PdoGsb::$user_dist,
+                    PdoGsb::$mdp_dist
+            );
+        } else {
+             PdoGsb::$monPdo = new PDO(
+                    PdoGsb::$serveur . ';' . PdoGsb::$bdd,
+                    PdoGsb::$user,
+                    PdoGsb::$mdp
+            );
         }
         PdoGsb::$monPdo->query('SET CHARACTER SET utf8');
     }
@@ -299,7 +274,7 @@ class PdoGsb
                 . 'WHERE fichefrais.idvisiteur = :unIdVisiteur '
                 . 'AND fichefrais.mois = :unMois'
         );
-        $requetePrepare->bindParam(':unNbJustificatifs', $nbJustificatifs,PDO::PARAM_INT);
+        $requetePrepare->bindParam(':unNbJustificatifs', $nbJustificatifs, PDO::PARAM_INT);
         $requetePrepare->bindParam(':unIdVisiteur', $idVisiteur, PDO::PARAM_STR);
         $requetePrepare->bindParam(':unMois', $mois, PDO::PARAM_STR);
         $requetePrepare->execute();
@@ -362,16 +337,21 @@ class PdoGsb
      *
      * @return null
      */
-    public function creeNouvellesLignesFrais($idVisiteur, $mois) {
+   public function creeNouvellesLignesFrais($idVisiteur, $mois)
+    {
+       
         $dernierMois = $this->dernierMoisSaisi($idVisiteur);
+
         $laDerniereFiche = $this->getLesInfosFicheFrais($idVisiteur, $dernierMois);
-        if ($laDerniereFiche['idEtat'] == 'CR') {
-            $this->majEtatFicheFrais($idVisiteur, $dernierMois, 'CL');
+   
+        if ($laDerniereFiche['idEtat'] == 'CR') {//'CR'=en cours.
+            $this->majEtatFicheFrais($idVisiteur, $dernierMois, 'CL');//'CL'=cloturée.
         }
+     
         $requetePrepare = PdoGsb::$monPdo->prepare(
-                'INSERT INTO fichefrais (idvisiteur,mois,nbJustificatifs,'
-                . 'montantValide,dateModif,idEtat) '
-                . "VALUES (:unIdVisiteur,:unMois,0,0,now(),'CR')"
+            'INSERT INTO fichefrais (idvisiteur,mois,nbjustificatifs,'
+            . 'montantvalide,datemodif,idetat) '
+            . "VALUES (:unIdVisiteur,:unMois,0,0,now(),'CR')"
         );
         $requetePrepare->bindParam(':unIdVisiteur', $idVisiteur, PDO::PARAM_STR);
         $requetePrepare->bindParam(':unMois', $mois, PDO::PARAM_STR);
@@ -379,21 +359,20 @@ class PdoGsb
         $lesIdFrais = $this->getLesIdFrais();
         foreach ($lesIdFrais as $unIdFrais) {
             $requetePrepare = PdoGsb::$monPdo->prepare(
-                    'INSERT INTO lignefraisforfait (idvisiteur,mois,'
-                    . 'idFraisForfait,quantite) '
-                    . 'VALUES(:unIdVisiteur, :unMois, :idFrais, 0)'
+                'INSERT INTO lignefraisforfait (idvisiteur,mois,'
+                . 'idfraisforfait,quantite) '
+                . 'VALUES(:unIdVisiteur, :unMois, :idFrais, 0)'
             );
             $requetePrepare->bindParam(':unIdVisiteur', $idVisiteur, PDO::PARAM_STR);
             $requetePrepare->bindParam(':unMois', $mois, PDO::PARAM_STR);
             $requetePrepare->bindParam(
-                    ':idFrais',
-                    $unIdFrais['idfrais'],
-                    PDO::PARAM_STR
+                ':idFrais',
+                $unIdFrais['idfrais'],
+                PDO::PARAM_STR
             );
             $requetePrepare->execute();
         }
     }
-
     /**
      * Crée un nouveau frais hors forfait pour un visiteur un mois donné
      * à partir des informations fournies en paramètre
@@ -488,24 +467,26 @@ class PdoGsb
      * @return un tableau avec des champs de jointure entre une fiche de frais
      *         et la ligne d'état
      */
-    public function getLesInfosFicheFrais($idVisiteur, $mois) {
+    public function getLesInfosFicheFrais($idVisiteur, $mois)
+    {
         $requetePrepare = PdoGSB::$monPdo->prepare(
-                'SELECT ficheFrais.idEtat as idEtat, '
-                . 'ficheFrais.dateModif as dateModif,'
-                . 'ficheFrais.nbJustificatifs as nbJustificatifs, '
-                . 'ficheFrais.montantValide as montantValide, '
-                . 'etat.libelle as libEtat '
-                . 'FROM fichefrais '
-                . 'INNER JOIN Etat ON ficheFrais.idEtat = Etat.id '
-                . 'WHERE fichefrais.idvisiteur = :unIdVisiteur '
-                . 'AND fichefrais.mois = :unMois'
+            'SELECT fichefrais.idetat as idEtat, '
+            . 'fichefrais.datemodif as dateModif,'
+            . 'fichefrais.nbjustificatifs as nbJustificatifs, '
+            . 'fichefrais.montantvalide as montantValide, '
+            . 'etat.libelle as libEtat '
+            . 'FROM fichefrais '
+            . 'INNER JOIN etat ON fichefrais.idetat = etat.id '
+            . 'WHERE fichefrais.idvisiteur = :unIdVisiteur '
+            . 'AND fichefrais.mois = :unMois'
         );
-        $requetePrepare->bindParam(':unIdVisiteur', $idVisiteur, PDO::PARAM_STR);
+        $requetePrepare->bindParam(':unIdVisiteur', $idVisiteur, PDO::PARAM_STR);//permet de definir que le mdp et le login envoyés en paramètre correspondent à ceux récupérés de la bdd par la requete sql.
         $requetePrepare->bindParam(':unMois', $mois, PDO::PARAM_STR);
         $requetePrepare->execute();
         $laLigne = $requetePrepare->fetch();
         return $laLigne;
     }
+
 
     /**
      * Modifie l'état et la date de modification d'une fiche de frais.
@@ -517,20 +498,21 @@ class PdoGsb
      *
      * @return null
      */
-    public function majEtatFicheFrais($idVisiteur, $mois, $etat) {
+   public function majEtatFicheFrais($idVisiteur, $mois, $etat)
+    {
         $requetePrepare = PdoGSB::$monPdo->prepare(
-                'UPDATE ficheFrais '
-                . 'SET idEtat = :unEtat, dateModif = now() '
-                . 'WHERE fichefrais.idvisiteur = :unIdVisiteur '
-                . 'AND fichefrais.mois = :unMois'
+            'UPDATE fichefrais '
+            . 'SET idetat = :unEtat, datemodif = now() '
+            . 'WHERE fichefrais.idvisiteur = :unIdVisiteur '
+            . 'AND fichefrais.mois = :unMois'
         );
         $requetePrepare->bindParam(':unEtat', $etat, PDO::PARAM_STR);
         $requetePrepare->bindParam(':unIdVisiteur', $idVisiteur, PDO::PARAM_STR);
         $requetePrepare->bindParam(':unMois', $mois, PDO::PARAM_STR);
         $requetePrepare->execute();
     }
-
-    public function getLesVisiteursAValider() {
+    
+     public function getLesVisiteursAValider() {
         $requetePrepare = PdoGSB::$monPdo->prepare(
                 "SELECT nom, prenom, id " .
                 "FROM visiteur  ");
@@ -605,7 +587,7 @@ class PdoGsb
         return $requetePrepare->fetchAll();
     }
 
-    public function calculerEFetEHF($idVisiteur, $unMois, $Total, $idEtat,$nbJ) {
+    public function calculerEFetEHF($idVisiteur, $unMois, $Total, $idEtat, $nbJ) {
         $requetePrepare = PdoGSB::$monPdo->prepare(
                 'UPDATE `fichefrais` SET `montantvalide`= :unTotal, `idetat`= :unIdEtat , `nbjustificatifs`= :unNbJustificatifs '
                 . 'WHERE idvisiteur = :unIdVisiteur '
@@ -618,7 +600,7 @@ class PdoGsb
         $requetePrepare->bindParam(':unIdEtat', $idEtat, PDO::PARAM_STR);
         $requetePrepare->bindParam(':unNbJustificatifs', $nbJ, PDO::PARAM_STR);
         $requetePrepare->execute();
-        //echo "AVISHAG";
+//echo "AVISHAG";
         return $requetePrepare->fetchAll();
     }
 
@@ -631,19 +613,18 @@ class PdoGsb
         $requetePrepare->execute();
         return $requetePrepare->fetchAll();
     }
-    
-    public function MoisSuivrePaiement()
-    {
+
+    public function MoisSuivrePaiement() {
         $requetePrepare = PdoGsb::$monPdo->prepare(
-            'SELECT fichefrais.mois AS mois FROM fichefrais '
-            . 'WHERE idetat = "VA"'
-            . 'ORDER BY fichefrais.mois desc'
+                'SELECT fichefrais.mois AS mois FROM fichefrais '
+                . 'WHERE idetat = "VA"'
+                . 'ORDER BY fichefrais.mois desc'
         );
         $requetePrepare->execute();
         return $requetePrepare->fetchAll();
     }
-    
-     public function ModifEtat($idVisiteur, $unMois) {
+
+    public function ModifEtat($idVisiteur, $unMois) {
         $requetePrepare = PdoGSB::$monPdo->prepare(
                 'UPDATE `fichefrais` SET idetat="RB"'
                 . 'WHERE idvisiteur = :unIdVisiteur '
@@ -653,7 +634,33 @@ class PdoGsb
         $requetePrepare->bindParam(':unIdVisiteur', $idVisiteur, PDO::PARAM_STR);
         $requetePrepare->bindParam(':unMois', $unMois, PDO::PARAM_STR);
         $requetePrepare->execute();
-        //echo "AVISHAG";
+//echo "AVISHAG";
         return $requetePrepare->fetchAll();
     }
+
+    public function modifMdpComptable($id, $mdp) {
+        $requetePrepare = PdoGSB::$monPdo->prepare(
+                'UPDATE comptable '
+                . 'SET mdp=:unMdp  '
+                . 'WHERE comptable.id = :unId '
+        );
+        $requetePrepare->bindParam(':unId', $id, PDO::PARAM_STR);
+        $requetePrepare->bindParam(':unMdp', $mdp, PDO::PARAM_STR);
+        $requetePrepare->execute();
+    }
+
+    public function modifMdpVisiteur($id, $mdp) {
+
+        $requetePrepare = PdoGSB::$monPdo->prepare(
+                'UPDATE visiteur '
+                . 'SET mdp=:unMdp  '
+                . 'WHERE visiteur.id = :unId '
+        );
+        $requetePrepare->bindParam(':unId', $id, PDO::PARAM_STR);
+        $requetePrepare->bindParam(':unMdp', $mdp, PDO::PARAM_STR);
+        $requetePrepare->execute();
+    }
+
+    
+
 }

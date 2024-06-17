@@ -14,6 +14,10 @@
  * @version   GIT: <0>
  * @link      http://www.reseaucerta.org Contexte « Laboratoire GSB »
  */
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 require_once 'includes/fct.inc.php';
 require_once 'includes/class.pdogsb.inc.php';
 session_start();
@@ -31,7 +35,7 @@ if ($uc && !$estConnecte) {
 }
 switch ($uc) {
     case 'connexion':
-        include 'controleurs/c_connexion.php';
+         include 'controleurs/c_connexion.php';
         break;
     case 'accueil':
         include 'controleurs/c_accueil.php';
